@@ -10,7 +10,9 @@ import { useCreateBlockNote } from "@blocknote/react";
 import { getCurrentBlock } from "@/common/utils/blockNotesUtils";
 import { useNotesContext } from "@/context/NotesContext";
 import { useSuggestionsContext } from "@/context/SuggestionsContext";
-import MyBlockNoteEditor from "./MyBlockNoteEditor";
+import { BlockNoteView } from "@blocknote/mantine";
+import "@blocknote/core/fonts/inter.css";
+import "@blocknote/mantine/style.css";
 
 const DEFAULT_BLOCKS: PartialBlock = {
 	type: "paragraph",
@@ -94,7 +96,9 @@ export default function NoteDoc() {
 					<SyncIcon />
 				</IconButton>
 			</Stack>
-			<MyBlockNoteEditor editable={true} editor={editor} />
+			<Stack className="-mx-[-48px] my-4">
+				<BlockNoteView editor={editor} editable={true} theme="light" />
+			</Stack>
 		</Box>
 	);
 }
