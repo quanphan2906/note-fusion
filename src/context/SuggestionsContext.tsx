@@ -1,15 +1,13 @@
 import React, { createContext, useContext, useState } from "react";
-import { Block } from "@blocknote/core";
 import { Suggestion } from "@/common/types/Suggestion";
-import { extractContentFromBlock } from "@/common/utils/blockNotesUtils";
+import { searchForRelevantBlocks } from "@/services/pineconeService";
 
-const SuggestionsContext = createContext<
-	| {
-			suggestions: Suggestion[];
-			getSuggestionsForTextBlock: (textBlock: Block) => Promise<void>;
-	  }
-	| undefined
->(undefined);
+type SuggestionsContextType = {
+	suggestions: Suggestion[];
+	getSuggestionsForTextBlock: (text: string) => Promise<void>;
+};
+
+const SuggestionsContext = createContext<SuggestionsContextType | undefined>(undefined);
 
 interface SuggestionsContextProviderProps {
 	children: React.ReactNode;
@@ -20,12 +18,11 @@ export const SuggestionsContextProvider = ({
 }: SuggestionsContextProviderProps) => {
 	const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
 
-	const getSuggestionsForTextBlock = async (textBlock: Block) => {
-		const text = extractContentFromBlock(textBlock);
-		// call to pinecone api with textBlock
-		const _suggestions: Suggestion[] = [];
-		setSuggestions(_suggestions);
-	};
+	const getSuggestionsForTextBlock: SuggestionsContextType["getSuggestionsForTextBlock"] =
+		async (text) => {
+			const _suggestions = await searchForRelevantBlocks(text);
+			setSuggestions(_suggestions);
+		};
 
 	const contextValue = {
 		suggestions,

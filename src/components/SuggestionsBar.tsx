@@ -8,7 +8,11 @@ const SuggestionBar = () => {
 	const { setNoteIdOnUrl } = useNotesContext();
 
 	return (
-		<Stack direction="column" spacing={2} style={{ width: "300px" }}>
+		<Stack
+			direction="column"
+			spacing={2}
+			sx={{ width: "300px", backgroundColor: "grey" }}
+		>
 			{suggestions.map(({ noteId, noteTitle, content }) => (
 				<Card
 					key={`${noteId}-${noteTitle}`}

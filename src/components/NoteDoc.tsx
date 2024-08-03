@@ -7,7 +7,7 @@ import { useDebounce } from "@uidotdev/usehooks";
 import { Box, IconButton, Stack } from "@mui/material";
 import SyncIcon from "@mui/icons-material/Sync";
 import { useCreateBlockNote } from "@blocknote/react";
-import { getCurrentBlock } from "@/common/utils/blockNotesUtils";
+import { getSelectedText } from "@/common/utils/blockNotesUtils";
 import { useNotesContext } from "@/context/NotesContext";
 import { useSuggestionsContext } from "@/context/SuggestionsContext";
 import { BlockNoteView } from "@blocknote/mantine";
@@ -68,7 +68,7 @@ export default function NoteDoc() {
 	const { getSuggestionsForTextBlock } = useSuggestionsContext();
 
 	const handleGetSuggestions = async () => {
-		const currentContent = getCurrentBlock(editor);
+		const currentContent = getSelectedText(editor);
 		await getSuggestionsForTextBlock(currentContent);
 	};
 

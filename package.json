@@ -23,11 +23,13 @@
 		"lodash": "^4.17.21",
 		"next": "14.2.4",
 		"nuqs": "^1.17.4",
+		"openai": "^4.54.0",
 		"react": "^18",
 		"react-dom": "^18",
 		"uuid": "^10.0.0"
 	},
 	"devDependencies": {
+		"@types/lodash": "^4.17.7",
 		"@types/node": "^20",
 		"@types/react": "^18",
 		"@types/react-dom": "^18",

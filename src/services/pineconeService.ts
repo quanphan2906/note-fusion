@@ -9,8 +9,10 @@ import {
 } from "@/common/types/Pinecone";
 import { PineconeIndexQuery } from "./pineconeConfig";
 import { ServiceResult } from "@/common/types/ServiceResult";
-import { map, times } from "lodash";
+import { compact, map, times } from "lodash";
 import { v4 as uuidv4 } from "uuid";
+import { generateEmbeddings } from "./generateEmbeddings";
+import { Suggestion } from "@/common/types/Suggestion";
 
 // Save vector embeddings to Pinecone
 const saveEmbeddings = async <I extends PineconeIndexes>(
@@ -38,12 +40,12 @@ export const vectorSearch = async <I extends PineconeIndexes>(
 	index: I,
 	{
 		queryVector,
-		topK,
-		includeMetadata,
-		filter,
+		topK = 10,
+		includeMetadata = true,
+		filter = {},
 	}: {
 		queryVector: Vector;
-		topK: number;
+		topK?: number;
 		includeMetadata?: boolean;
 		filter?: Partial<PineconeMetaData[I]>;
 	},
@@ -79,24 +81,22 @@ export const deleteVectors = async <I extends PineconeIndexes>(
 	await indexQuery.deleteMany(ids);
 };
 
-// TODO: How to generate embeddings in TS?
-const generateEmbedding = (text: string): Vector => {
-	return [];
-};
-
-export const upsertNote = async (noteId: string, blocks: string[]) => {
+export const upsertNote = async (noteId: string, noteTitle: string, blocks: string[]) => {
 	await deleteNote(noteId);
-	// generate embeddings from blocks
-	const embeddings = blocks.map((block) => ({
+
+	const embeddingValues = await generateEmbeddings(blocks);
+
+	const embeddings = blocks.map((block, blockIndex) => ({
 		id: uuidv4(),
-		values: generateEmbedding(block),
+		values: embeddingValues[blockIndex],
 		metadata: {
 			noteId,
+			noteTitle,
 			content: block,
 		},
 	}));
 
-	await saveEmbeddings(PineconeIndexes.Blocks, embeddings);
+	return await saveEmbeddings(PineconeIndexes.Blocks, embeddings);
 };
 
 export const deleteNote = async (noteId: string) => {
@@ -108,5 +108,17 @@ export const deleteNote = async (noteId: string) => {
 	});
 
 	const idsToDelete = map(results.data, (match) => match.id);
-	await deleteVectors(PineconeIndexes.Blocks, idsToDelete);
+	return await deleteVectors(PineconeIndexes.Blocks, idsToDelete);
+};
+
+export const searchForRelevantBlocks = async (text: string): Promise<Suggestion[]> => {
+	const embeddingValues = await generateEmbeddings([text]);
+	const queryVector = embeddingValues[0]!;
+	const res = await vectorSearch(PineconeIndexes.Blocks, {
+		queryVector,
+	});
+
+	const suggestionsWithUndefined = map(res.data, (result) => result.metadata);
+	const suggestions = compact(suggestionsWithUndefined);
+	return suggestions;
 };

@@ -10,10 +10,10 @@ import SuggestionBar from "@/components/SuggestionsBar";
 
 const Home = () => {
 	return (
-		<Stack>
+		<Stack sx={{ height: "100%" }}>
 			<SuggestionsContextProvider>
 				<NotesContextProvider>
-					<Stack direction="row">
+					<Stack direction="row" sx={{ height: "100%" }}>
 						<NoteListSidebar />
 						<NoteDoc />
 						<SuggestionBar />
