@@ -1,10 +1,3 @@
-import { FirestoreCollection } from "@/common/types/Firestore";
-import {
-	createDocument,
-	deleteDocument,
-	getAllDocuments,
-	updateDocument,
-} from "@/access-services/firebase-access-service";
 import { Note } from "@/common/types/Note";
 import React, {
 	createContext,
@@ -16,7 +9,7 @@ import React, {
 } from "react";
 import { ServiceResult } from "@/common/types/ServiceResult";
 import { Options, parseAsString, useQueryState } from "nuqs";
-import { createNote, updateNote } from "@/services/note";
+import { createNote, deleteNote, getAllNotes, updateNote } from "@/services/note";
 
 const NotesContext = createContext<
 	| {
@@ -54,11 +47,7 @@ export const NotesContextProvider = ({ children }: NotesContextProviderProps) =>
 
 	useEffect(() => {
 		const fetchAllNotes = async () => {
-			const {
-				data: _notes,
-				status,
-				message,
-			} = await getAllDocuments(FirestoreCollection.Notes);
+			const { data: _notes, status, message } = await getAllNotes();
 
 			if (status === "OK" && _notes !== undefined) setNotes(_notes);
 			if (status === "ERROR") console.error(message);
@@ -96,7 +85,7 @@ export const NotesContextProvider = ({ children }: NotesContextProviderProps) =>
 	const updateCurrentNote = useCallback(
 		async (noteChanges: Partial<Omit<Note, "id">>) => {
 			if (currentNote && currentNote.id) {
-				const queryResult = await updateNote();
+				const queryResult = await updateNote(currentNote.id, noteChanges);
 
 				if (queryResult.status === "ERROR") {
 					console.error(queryResult.message);
@@ -125,7 +114,7 @@ export const NotesContextProvider = ({ children }: NotesContextProviderProps) =>
 	};
 
 	const handleDeleteNote = async (id: string) => {
-		const queryResult = await deleteDocument(FirestoreCollection.Notes, id);
+		const queryResult = await deleteNote(id);
 
 		setNotes((prevNotes) => {
 			if (!prevNotes) return prevNotes;
