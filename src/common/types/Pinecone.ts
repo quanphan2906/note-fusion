@@ -1,8 +1,6 @@
 import { ScoredPineconeRecord } from "@pinecone-database/pinecone";
 import { Suggestion } from "./Suggestion";
 
-export type Vector = number[];
-
 export enum PineconeIndexes {
 	Blocks = "blocks",
 }
@@ -11,7 +9,7 @@ export interface PineconeMetaData {
 	[PineconeIndexes.Blocks]: Suggestion;
 }
 
-export type Embedding<I extends PineconeIndexes> = {
+export type Vector<I extends PineconeIndexes> = {
 	id: string;
 	values: number[];
 	metadata: PineconeMetaData[I];

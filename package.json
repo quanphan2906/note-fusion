@@ -1,5 +1,5 @@
 {
-	"name": "mango",
+	"name": "note-fusion",
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
@@ -7,7 +7,7 @@
 		"build": "next build",
 		"start": "next start",
 		"lint": "next lint",
-		"prepare": "husky install"
+		"prepare": "husky"
 	},
 	"dependencies": {
 		"@blocknote/core": "^0.14.5",
@@ -19,6 +19,7 @@
 		"@mui/material": "^5.15.21",
 		"@pinecone-database/pinecone": "^3.0.0",
 		"@uidotdev/usehooks": "^2.4.1",
+		"axios": "^1.7.3",
 		"firebase": "^10.12.3",
 		"lodash": "^4.17.21",
 		"next": "14.2.4",
@@ -26,7 +27,8 @@
 		"openai": "^4.54.0",
 		"react": "^18",
 		"react-dom": "^18",
-		"uuid": "^10.0.0"
+		"uuid": "^10.0.0",
+		"zod": "^3.23.8"
 	},
 	"devDependencies": {
 		"@types/lodash": "^4.17.7",

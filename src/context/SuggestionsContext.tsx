@@ -21,6 +21,7 @@ export const SuggestionsContextProvider = ({
 	const getSuggestionsForTextBlock: SuggestionsContextType["getSuggestionsForTextBlock"] =
 		async (text) => {
 			const _suggestions = await searchForRelevantBlocks(text);
+			// const _suggestions: Suggestion[] = [];
 			setSuggestions(_suggestions);
 		};
 

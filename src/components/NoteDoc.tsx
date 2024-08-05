@@ -45,17 +45,10 @@ export default function NoteDoc() {
 	}, [currentNote]);
 
 	const updateNote = useCallback(async () => {
-		// use extractTextFromBlocks util to extract the block and send to Pinecone
-		// const newBlocksText = newBlocks ? extractTextFromBlocks(newBlocks) : undefined;
-		// add the api function to upsert to pinecone into the Promise all array below
-		const [fbResult] = await Promise.all([
-			updateCurrentNote({ title: titleCopy, content: editor.document }),
-		]);
-		if (fbResult?.status === "ERROR") {
-			console.error(fbResult.message);
-		}
-
-		console.log("fbResult", fbResult);
+		await updateCurrentNote({
+			title: titleCopy,
+			content: editor.document,
+		});
 	}, [updateCurrentNote, titleCopy, editor.document]);
 
 	/**
