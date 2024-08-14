@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 import { Suggestion } from "@/common/types/Suggestion";
-import { searchForRelevantBlocks } from "@/services/pineconeService";
+import { searchForRelevantBlocks } from "@/services/note";
 
 type SuggestionsContextType = {
 	suggestions: Suggestion[];

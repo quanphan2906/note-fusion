@@ -11,7 +11,7 @@ import { IndexDescriptionSchema, VectorSearchSchema } from "./pinecone-validatio
 const getIndexHost = async (indexName: PineconeIndexes) => {
 	const response = await pineconeAxios({
 		method: "get",
-		url: `https://api.pinecone.io/${indexName}`,
+		url: `https://api.pinecone.io/indexes/${indexName}`,
 	});
 
 	const parsedData = IndexDescriptionSchema.parse(response.data);
@@ -95,5 +95,29 @@ export const deleteVectors = async <I extends PineconeIndexes>(
 	} catch (err) {
 		const error = err as Error;
 		return createServiceResult("ERROR", "Error upserting vectors: " + error.message);
+	}
+};
+
+export const generateEmbeddings = async (texts: string[]) => {
+	const inputs = texts.map((text) => ({ text }));
+
+	try {
+		const response = await pineconeAxios({
+			method: "post",
+			url: `https://api.pinecone.io/embed`,
+			data: {
+				model: "multilingual-e5-large",
+				inputs,
+			},
+		});
+
+		return response.data;
+	} catch (err) {
+		const error = err as Error;
+		console.log("created the error", error);
+		return createServiceResult(
+			"ERROR",
+			"Error generating embeddings: " + error.message,
+		);
 	}
 };

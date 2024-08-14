@@ -14,6 +14,6 @@ export const createServiceResult = <T>(
 	return {
 		status,
 		message: isNil(message) ? "" : message,
-		data,
+		data: data ?? undefined,
 	};
 };

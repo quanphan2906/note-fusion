@@ -5,7 +5,6 @@ import {
 } from "@/common/types/Pinecone";
 import { createServiceResult, ServiceResult } from "@/common/types/ServiceResult";
 import { compact, map, times } from "lodash";
-import { generateEmbeddings } from "../common/utils/generateEmbeddings";
 import { Suggestion } from "@/common/types/Suggestion";
 import {
 	createDocument,
@@ -13,14 +12,15 @@ import {
 	getAllDocuments,
 	getDocument,
 	updateDocument,
-} from "@/access-services/firebase-access-service";
+} from "@/dao/firebase-access-service";
 import { FirestoreCollection } from "@/common/types/Firestore";
 import { Note } from "@/common/types/Note";
 import {
 	deleteVectors,
 	upsertVectors,
 	vectorSearch,
-} from "@/access-services/pinecone-access-service-v2";
+	generateEmbeddings,
+} from "@/dao/pinecone-access-service";
 import { Block } from "@blocknote/core";
 
 export const createNote = async () => {
@@ -50,6 +50,8 @@ export const updateNote = async (
 		return createServiceResult(docResponse.status, docResponse.message);
 	const noteTitle = docResponse.data.title;
 
+	console.log("Hey made the call to Firebase!");
+
 	// ideally, we'd want to compare blocks at all levels and update
 	// but for PoC, we will only work with top level blocks.
 	// 1. Delete all current top level blocks
@@ -57,6 +59,8 @@ export const updateNote = async (
 	const idsOfBlocksToDelete = map(topLevelBlocks, (b) => b.id);
 	await deleteVectors(PineconeIndexes.Blocks, idsOfBlocksToDelete);
 	await pineconeUpsertNote(noteId, noteTitle, topLevelBlocks ?? []); // extract from block to content
+
+	console.log("Made the call to Pinecone!");
 
 	// TODO: I think this is where the "always return error" gets funky
 	// When you're making calls to so many service functions, try catch allows you to catch the error once
@@ -77,7 +81,7 @@ export const deleteNote = async (id: string) => {
 	const pineconeQueryResult = await pineconeDeleteNote(id);
 	if (pineconeQueryResult.status === "ERROR") return pineconeQueryResult;
 
-	return createServiceResult("OK");
+	return createServiceResult<undefined>("OK");
 };
 
 export const pineconeUpsertNote = async (
@@ -85,10 +89,11 @@ export const pineconeUpsertNote = async (
 	noteTitle: string,
 	blocks: Block[],
 ) => {
-	// const contents = extractContentFromBlocks(blocks)
-	const contents: string[] = [];
+	const contents = map(blocks, (block) => block.content);
+	const textsWithUndefined = map(contents, (content) => content?.toString());
+	const texts = compact(textsWithUndefined);
 
-	const embeddingValues = await generateEmbeddings(contents);
+	const embeddingValues = await generateEmbeddings(texts);
 
 	const embeddings = blocks.map((block, blockIndex) => ({
 		id: block.id,
@@ -96,7 +101,7 @@ export const pineconeUpsertNote = async (
 		metadata: {
 			noteId,
 			noteTitle,
-			content: contents[blockIndex],
+			content: texts[blockIndex],
 		},
 	}));
 

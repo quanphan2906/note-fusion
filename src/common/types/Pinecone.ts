@@ -2,7 +2,7 @@ import { ScoredPineconeRecord } from "@pinecone-database/pinecone";
 import { Suggestion } from "./Suggestion";
 
 export enum PineconeIndexes {
-	Blocks = "blocks",
+	Blocks = "text-similarity",
 }
 
 export interface PineconeMetaData {
