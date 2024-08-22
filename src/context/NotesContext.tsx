@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import { ServiceResult } from "@/common/types/ServiceResult";
 import { Options, parseAsString, useQueryState } from "nuqs";
-import { createNote, deleteNote, getAllNotes, updateNote } from "@/services/note";
+import { createNote, deleteNote, getAllNotes, updateNote } from "@/services/note.service";
 
 // extract type of context and save it to a variable
 type NotesContextType = {

@@ -25,7 +25,7 @@ const DEFAULT_BLOCKS: PartialBlock = {
 	children: [],
 };
 
-const UPDATE_INTERVAL = 3000; // ms
+const UPDATE_INTERVAL = 20000; // ms
 
 export default function NoteDoc() {
 	const { currentNote, updateCurrentNote, titleCopy, setTitleCopy } = useNotesContext();

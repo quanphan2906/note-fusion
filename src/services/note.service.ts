@@ -1,10 +1,9 @@
 import {
 	DUMMY_TOPK_TO_QUERY_WITH_METADATA,
-	PineconeIndexes,
 	VECTOR_DIMENSIONS,
-} from "@/common/types/Pinecone";
+} from "@/dao/pinecone.config";
 import { createServiceResult, ServiceResult } from "@/common/types/ServiceResult";
-import { compact, map, times } from "lodash";
+import { compact, isArray, isEmpty, isNil, map, times } from "lodash";
 import { Suggestion } from "@/common/types/Suggestion";
 import {
 	createDocument,
@@ -12,15 +11,15 @@ import {
 	getAllDocuments,
 	getDocument,
 	updateDocument,
-} from "@/dao/firebase-access-service";
+} from "@/dao/firebase.service";
 import { FirestoreCollection } from "@/common/types/Firestore";
 import { Note } from "@/common/types/Note";
 import {
 	deleteVectors,
 	upsertVectors,
-	vectorSearch,
+	queryVectors,
 	generateEmbeddings,
-} from "@/dao/pinecone-access-service";
+} from "@/dao/pinecone.service";
 import { Block } from "@blocknote/core";
 
 export const createNote = async () => {
@@ -30,6 +29,59 @@ export const createNote = async () => {
 	};
 	const queryResult = await createDocument(FirestoreCollection.Notes, emptyNote);
 	return queryResult;
+};
+
+export const getAllNotes = async () => {
+	const queryResult = await getAllDocuments(FirestoreCollection.Notes);
+	return queryResult;
+};
+
+export const searchForRelevantBlocks = async (text: string): Promise<Suggestion[]> => {
+	const embeddingValues = await generateEmbeddings([text]);
+	const queryVector = embeddingValues[0]!;
+	const res = await queryVectors({
+		queryVector,
+	});
+
+	const suggestionsWithUndefined = map(res, (result) => result.metadata);
+	const suggestions = compact(suggestionsWithUndefined);
+	return suggestions;
+};
+
+const pineconeUpsertNote = async (noteId: string, noteTitle: string, blocks: Block[]) => {
+	const textsWithUndefined = map(blocks, (block) =>
+		isArray(block.content) && !isEmpty(block.content)
+			? (block.content[0] as { text: string }).text
+			: undefined,
+	);
+
+	const texts = compact(textsWithUndefined);
+
+	console.log("all the texts", texts);
+
+	const embeddingValues = await generateEmbeddings(texts);
+
+	const embeddingsWithNull = map(blocks, (block, blockIndex) => {
+		if (isNil(embeddingValues[blockIndex])) {
+			return null;
+		}
+
+		return {
+			id: block.id,
+			values: embeddingValues[blockIndex],
+			metadata: {
+				noteId,
+				noteTitle,
+				content: texts[blockIndex],
+			},
+		};
+	});
+
+	const embeddings = compact(embeddingsWithNull);
+
+	console.log("all the embeddings", embeddings);
+
+	return await upsertVectors(embeddings);
 };
 
 export const updateNote = async (
@@ -57,7 +109,7 @@ export const updateNote = async (
 	// 1. Delete all current top level blocks
 	// 2. Upsert new
 	const idsOfBlocksToDelete = map(topLevelBlocks, (b) => b.id);
-	await deleteVectors(PineconeIndexes.Blocks, idsOfBlocksToDelete);
+	await deleteVectors(idsOfBlocksToDelete);
 	await pineconeUpsertNote(noteId, noteTitle, topLevelBlocks ?? []); // extract from block to content
 
 	console.log("Made the call to Pinecone!");
@@ -69,65 +121,19 @@ export const updateNote = async (
 	return createServiceResult("OK");
 };
 
-export const getAllNotes = async () => {
-	const queryResult = await getAllDocuments(FirestoreCollection.Notes);
-	return queryResult;
-};
-
 export const deleteNote = async (id: string) => {
 	const fbQueryResult = await deleteDocument(FirestoreCollection.Notes, id);
 	if (fbQueryResult.status === "ERROR") return fbQueryResult;
 
-	const pineconeQueryResult = await pineconeDeleteNote(id);
-	if (pineconeQueryResult.status === "ERROR") return pineconeQueryResult;
-
-	return createServiceResult<undefined>("OK");
-};
-
-export const pineconeUpsertNote = async (
-	noteId: string,
-	noteTitle: string,
-	blocks: Block[],
-) => {
-	const contents = map(blocks, (block) => block.content);
-	const textsWithUndefined = map(contents, (content) => content?.toString());
-	const texts = compact(textsWithUndefined);
-
-	const embeddingValues = await generateEmbeddings(texts);
-
-	const embeddings = blocks.map((block, blockIndex) => ({
-		id: block.id,
-		values: embeddingValues[blockIndex],
-		metadata: {
-			noteId,
-			noteTitle,
-			content: texts[blockIndex],
-		},
-	}));
-
-	return await upsertVectors(PineconeIndexes.Blocks, embeddings);
-};
-
-export const pineconeDeleteNote = async (noteId: string) => {
-	const results = await vectorSearch(PineconeIndexes.Blocks, {
+	const results = await queryVectors({
 		queryVector: times(VECTOR_DIMENSIONS, () => 0),
 		topK: DUMMY_TOPK_TO_QUERY_WITH_METADATA,
 		includeMetadata: true,
-		filter: { noteId },
+		filter: { noteId: id },
 	});
 
-	const idsToDelete = map(results.data, (match) => match.id);
-	return await deleteVectors(PineconeIndexes.Blocks, idsToDelete);
-};
+	const idsToDelete = map(results, (match) => match.id);
+	await deleteVectors(idsToDelete);
 
-export const searchForRelevantBlocks = async (text: string): Promise<Suggestion[]> => {
-	const embeddingValues = await generateEmbeddings([text]);
-	const queryVector = embeddingValues[0]!;
-	const res = await vectorSearch(PineconeIndexes.Blocks, {
-		queryVector,
-	});
-
-	const suggestionsWithUndefined = map(res.data, (result) => result.metadata);
-	const suggestions = compact(suggestionsWithUndefined);
-	return suggestions;
+	return createServiceResult<undefined>("OK");
 };

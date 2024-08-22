@@ -35,7 +35,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Data access functions
 type OptionalId<T> = Omit<T, "id"> | T;
 
 export const createDocument = async <C extends FirestoreCollection>(
