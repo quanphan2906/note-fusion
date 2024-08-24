@@ -7,6 +7,7 @@ import {
 import { Suggestion } from "@/common/types/Suggestion";
 import { z } from "zod";
 import { map } from "lodash";
+import { metadata } from "@/app/layout";
 
 export const upsertVectors = async (vectors: PineconeRecord<Suggestion>[]) => {
 	await axios({
@@ -38,20 +39,7 @@ export const queryVectors = async ({
 		},
 	});
 
-	const VectorSearchSchema = z.object({
-		matches: z.array(
-			z.object({
-				id: z.string(),
-				score: z.number(),
-				values: z.array(z.number()),
-				// TODO: how to validate metadata?
-			}),
-		),
-	});
-
-	const data = VectorSearchSchema.parse(result.data);
-
-	return data.matches as ScoredPineconeRecord<Suggestion>[];
+	return result.data as ScoredPineconeRecord<Suggestion>[];
 };
 
 export const deleteVectors = async (

@@ -7,10 +7,15 @@ import {
 	Divider,
 	ListItem,
 	Button,
+	Typography,
+	IconButton,
+	Stack,
 } from "@mui/material";
 import { useNotesContext } from "@/context/NotesContext";
+import { palette } from "@/app/theme";
+import { ArticleOutlined, NoteAdd } from "@mui/icons-material";
 
-const drawerWidth = 240;
+const drawerWidth = 260;
 
 const NoteListSidebar = () => {
 	const { notes, currentNote, createNewNote, setNoteIdOnUrl, titleCopy } =
@@ -30,21 +35,42 @@ const NoteListSidebar = () => {
 			}}
 		>
 			<List>
+				<ListItem sx={{ display: "flex", justifyContent: "flex-end" }}>
+					<IconButton color="text.secondary" onClick={createNewNote}>
+						<NoteAdd />
+					</IconButton>
+				</ListItem>
 				{notes.map((note) => (
 					<React.Fragment key={note.id}>
-						<ListItemButton onClick={() => setNoteIdOnUrl(note.id)}>
-							<ListItemText
-								primary={note.id === currentNote?.id ? titleCopy : note.title}
-							/>
-						</ListItemButton>
-						<Divider />
+						<ListItem sx={{ padding: 0 }}>
+							<ListItemButton
+								onClick={() => setNoteIdOnUrl(note.id)}
+								sx={{
+									"&:hover": {
+										backgroundColor: palette.paperHover,
+									},
+									borderRadius: "4px",
+									paddingTop: "4px",
+									paddingBottom: "4px",
+									paddingLeft: "16px",
+									marginLeft: "8px",
+									marginRight: "8px",
+								}}
+							>
+								<ListItemText
+									primary={
+										<Stack direction="row" spacing={1} alignItems={"center"}>
+											<ArticleOutlined fontSize="small" fontWeight={200} />
+											<Typography variant="body1" color="text.secondary">
+												{note.id === currentNote?.id ? titleCopy : note.title}
+											</Typography>
+										</Stack>
+									}
+								/>
+							</ListItemButton>
+						</ListItem>
 					</React.Fragment>
 				))}
-				<ListItem>
-					<Button variant="contained" color="primary" onClick={createNewNote}>
-						+ Add Note
-					</Button>
-				</ListItem>
 			</List>
 		</Drawer>
 	);

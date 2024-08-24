@@ -5,9 +5,9 @@ import { Suggestion } from "@/common/types/Suggestion";
 
 export async function POST(req: NextRequest) {
 	try {
-		const { queryVector, topK, includeMetadata, filter } = await req.json();
+		const { vector, topK, includeMetadata, filter } = await req.json();
 		const result = await indexQuery.query({
-			vector: queryVector,
+			vector,
 			topK: topK,
 			includeMetadata,
 			filter,
@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
 
 		return NextResponse.json(result.matches as ScoredPineconeRecord<Suggestion>[]);
 	} catch (error) {
+		console.log("error", error);
 		return NextResponse.json(
 			{ status: "ERROR", message: "Failed to conduct vector search" },
 			{ status: 500 },

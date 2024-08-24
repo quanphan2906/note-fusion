@@ -5,6 +5,7 @@ import { searchForRelevantBlocks } from "@/services/note.service";
 type SuggestionsContextType = {
 	suggestions: Suggestion[];
 	getSuggestionsForTextBlock: (text: string) => Promise<void>;
+	setSuggestions: React.Dispatch<React.SetStateAction<Suggestion[]>>;
 };
 
 const SuggestionsContext = createContext<SuggestionsContextType | undefined>(undefined);
@@ -16,18 +17,24 @@ interface SuggestionsContextProviderProps {
 export const SuggestionsContextProvider = ({
 	children,
 }: SuggestionsContextProviderProps) => {
-	const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+	const [suggestions, setSuggestions] = useState<Suggestion[]>([
+		{
+			noteId: "",
+			noteTitle: "asdlkvm;alsd",
+			content: "asdvlkm;q",
+		},
+	]);
 
 	const getSuggestionsForTextBlock: SuggestionsContextType["getSuggestionsForTextBlock"] =
 		async (text) => {
 			const _suggestions = await searchForRelevantBlocks(text);
-			// const _suggestions: Suggestion[] = [];
 			setSuggestions(_suggestions);
 		};
 
 	const contextValue = {
 		suggestions,
 		getSuggestionsForTextBlock,
+		setSuggestions,
 	};
 
 	return (

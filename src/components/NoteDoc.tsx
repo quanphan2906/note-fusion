@@ -5,7 +5,6 @@ import { useEffect, useCallback } from "react";
 import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
 import { useDebounce } from "@uidotdev/usehooks";
 import { Box, IconButton, Stack } from "@mui/material";
-import SyncIcon from "@mui/icons-material/Sync";
 import { useCreateBlockNote } from "@blocknote/react";
 import { getSelectedText } from "@/common/utils/blockNotesUtils";
 import { useNotesContext } from "@/context/NotesContext";
@@ -13,6 +12,7 @@ import { useSuggestionsContext } from "@/context/SuggestionsContext";
 import { BlockNoteView } from "@blocknote/mantine";
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/mantine/style.css";
+import { SearchOutlined } from "@mui/icons-material";
 
 const DEFAULT_BLOCKS: PartialBlock = {
 	type: "paragraph",
@@ -68,7 +68,7 @@ export default function NoteDoc() {
 	return (
 		<Box>
 			<Stack direction="row">
-				<div className="flex flex-col px-24 py-10 w-full">
+				<div className="flex flex-col px-24 py-10">
 					<TextareaAutoSize
 						placeholder="Untitled"
 						className="w-full resize-none appearance-none overflow-hidden bg-transparent text-5xl font-bold focus:outline-none"
@@ -79,14 +79,14 @@ export default function NoteDoc() {
 				<IconButton
 					onClick={handleGetSuggestions}
 					style={{
-						marginRight: "50px",
+						marginRight: 160,
 						backgroundColor: "transparent",
 						border: "none",
 						outline: "none",
 						boxShadow: "none",
 					}}
 				>
-					<SyncIcon />
+					<SearchOutlined />
 				</IconButton>
 			</Stack>
 			<Stack className="-mx-[-48px] my-4">

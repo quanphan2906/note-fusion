@@ -2,7 +2,6 @@ import {
 	DUMMY_TOPK_TO_QUERY_WITH_METADATA,
 	VECTOR_DIMENSIONS,
 } from "@/dao/pinecone.config";
-import { createServiceResult, ServiceResult } from "@/common/types/ServiceResult";
 import { compact, isArray, isEmpty, isNil, map, times } from "lodash";
 import { Suggestion } from "@/common/types/Suggestion";
 import {
@@ -27,13 +26,13 @@ export const createNote = async () => {
 		title: "",
 		content: [],
 	};
-	const queryResult = await createDocument(FirestoreCollection.Notes, emptyNote);
-	return queryResult;
+	const newNote = await createDocument(FirestoreCollection.Notes, emptyNote);
+	return newNote;
 };
 
 export const getAllNotes = async () => {
-	const queryResult = await getAllDocuments(FirestoreCollection.Notes);
-	return queryResult;
+	const allNotes = await getAllDocuments(FirestoreCollection.Notes);
+	return allNotes;
 };
 
 export const searchForRelevantBlocks = async (text: string): Promise<Suggestion[]> => {
@@ -56,8 +55,6 @@ const pineconeUpsertNote = async (noteId: string, noteTitle: string, blocks: Blo
 	);
 
 	const texts = compact(textsWithUndefined);
-
-	console.log("all the texts", texts);
 
 	const embeddingValues = await generateEmbeddings(texts);
 
@@ -87,20 +84,13 @@ const pineconeUpsertNote = async (noteId: string, noteTitle: string, blocks: Blo
 export const updateNote = async (
 	noteId: string,
 	noteChanges: Partial<Omit<Note, "id">>,
-): Promise<ServiceResult<void>> => {
-	const queryResult = await updateDocument(
-		FirestoreCollection.Notes,
-		noteId,
-		noteChanges,
-	);
-	if (queryResult.status !== "OK") return queryResult;
+): Promise<void> => {
+	await updateDocument(FirestoreCollection.Notes, noteId, noteChanges);
 
 	const { content: topLevelBlocks } = noteChanges;
 
-	const docResponse = await getDocument(FirestoreCollection.Notes, noteId);
-	if (docResponse.status === "ERROR" || docResponse.data === undefined)
-		return createServiceResult(docResponse.status, docResponse.message);
-	const noteTitle = docResponse.data.title;
+	const note = await getDocument(FirestoreCollection.Notes, noteId);
+	const noteTitle = note?.title || "";
 
 	console.log("Hey made the call to Firebase!");
 
@@ -113,17 +103,10 @@ export const updateNote = async (
 	await pineconeUpsertNote(noteId, noteTitle, topLevelBlocks ?? []); // extract from block to content
 
 	console.log("Made the call to Pinecone!");
-
-	// TODO: I think this is where the "always return error" gets funky
-	// When you're making calls to so many service functions, try catch allows you to catch the error once
-	// Now you just have to name everything??
-
-	return createServiceResult("OK");
 };
 
 export const deleteNote = async (id: string) => {
-	const fbQueryResult = await deleteDocument(FirestoreCollection.Notes, id);
-	if (fbQueryResult.status === "ERROR") return fbQueryResult;
+	await deleteDocument(FirestoreCollection.Notes, id);
 
 	const results = await queryVectors({
 		queryVector: times(VECTOR_DIMENSIONS, () => 0),
@@ -134,6 +117,4 @@ export const deleteNote = async (id: string) => {
 
 	const idsToDelete = map(results, (match) => match.id);
 	await deleteVectors(idsToDelete);
-
-	return createServiceResult<undefined>("OK");
 };

@@ -7,7 +7,6 @@ import React, {
 	useMemo,
 	useState,
 } from "react";
-import { ServiceResult } from "@/common/types/ServiceResult";
 import { Options, parseAsString, useQueryState } from "nuqs";
 import { createNote, deleteNote, getAllNotes, updateNote } from "@/services/note.service";
 
@@ -21,9 +20,9 @@ type NotesContextType = {
 	createNewNote: () => Promise<void>;
 	updateCurrentNote: (
 		noteChanges: Partial<Omit<Note, "id">>,
-	) => Promise<ServiceResult<void> | undefined>;
-	handleDeleteCurrentNote: () => Promise<ServiceResult<void> | undefined>;
-	handleDeleteNote: (id: string) => Promise<ServiceResult<void>>;
+	) => Promise<void | undefined>;
+	handleDeleteCurrentNote: () => Promise<void | undefined>;
+	handleDeleteNote: (id: string) => Promise<void>;
 	isLoading: boolean;
 	setNoteIdOnUrl: <Shallow>(
 		value: string | ((old: string) => string | null) | null,
@@ -47,10 +46,9 @@ export const NotesContextProvider = ({ children }: NotesContextProviderProps) =>
 
 	useEffect(() => {
 		const fetchAllNotes = async () => {
-			const { data: _notes, status, message } = await getAllNotes();
+			const _notes = await getAllNotes();
 
-			if (status === "OK" && _notes !== undefined) setNotes(_notes);
-			if (status === "ERROR") console.error(message);
+			setNotes(_notes);
 			setIsLoading(false);
 		};
 
@@ -69,35 +67,22 @@ export const NotesContextProvider = ({ children }: NotesContextProviderProps) =>
 	}, [currentNote?.title]);
 
 	const createNewNote = async () => {
-		const queryResult = await createNote();
+		const newNote = await createNote();
 
-		if (queryResult.status === "ERROR" || queryResult.data === undefined) {
-			// handle error globally
-			console.error("Error creating new note");
-		}
-
-		if (queryResult.status === "OK" && queryResult.data !== undefined) {
-			setNotes((prevNotes) => [...prevNotes, queryResult.data as Note]);
-			setNoteIdOnUrl(queryResult.data.id);
-		}
+		setNotes((prevNotes) => [...prevNotes, newNote]);
+		setNoteIdOnUrl(newNote.id);
 	};
 
-	const updateCurrentNote = useCallback(
+	const updateCurrentNote: NotesContextType["updateCurrentNote"] = useCallback(
 		async (noteChanges: Partial<Omit<Note, "id">>) => {
 			if (currentNote && currentNote.id) {
-				const queryResult = await updateNote(currentNote.id, noteChanges);
-
-				if (queryResult.status === "ERROR") {
-					console.error(queryResult.message);
-				}
+				await updateNote(currentNote.id, noteChanges);
 
 				setNotes((prevNotes) =>
 					prevNotes.map((note) =>
 						note.id === noteId ? { ...note, ...noteChanges } : note,
 					),
 				);
-
-				return queryResult;
 			}
 		},
 		[currentNote],
@@ -106,22 +91,18 @@ export const NotesContextProvider = ({ children }: NotesContextProviderProps) =>
 	const handleDeleteCurrentNote: NotesContextType["handleDeleteCurrentNote"] =
 		async () => {
 			if (currentNote && currentNote.id) {
-				const queryResult = await handleDeleteNote(currentNote.id);
-				// set a different note id
-				return queryResult;
+				await handleDeleteNote(currentNote.id);
 			}
 		};
 
-	const handleDeleteNote = async (id: string) => {
-		const queryResult = await deleteNote(id);
+	const handleDeleteNote: NotesContextType["handleDeleteNote"] = async (id: string) => {
+		await deleteNote(id);
 
 		setNotes((prevNotes) => {
 			if (!prevNotes) return prevNotes;
 			const _notes = [...prevNotes];
 			return _notes.filter((note) => note.id !== id);
 		});
-
-		return queryResult;
 	};
 
 	const contextValue = {
