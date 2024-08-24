@@ -2,7 +2,7 @@ import {
 	DUMMY_TOPK_TO_QUERY_WITH_METADATA,
 	VECTOR_DIMENSIONS,
 } from "@/dao/pinecone.config";
-import { compact, isArray, isEmpty, isNil, map, times } from "lodash";
+import { compact, isArray, isEmpty, isNil, map, size, times } from "lodash";
 import { Suggestion } from "@/common/types/Suggestion";
 import {
 	createDocument,
@@ -58,6 +58,8 @@ const pineconeUpsertNote = async (noteId: string, noteTitle: string, blocks: Blo
 
 	const embeddingValues = await generateEmbeddings(texts);
 
+	if (size(embeddingValues) === 0) return;
+
 	const embeddingsWithNull = map(blocks, (block, blockIndex) => {
 		if (isNil(embeddingValues[blockIndex])) {
 			return null;
@@ -75,8 +77,6 @@ const pineconeUpsertNote = async (noteId: string, noteTitle: string, blocks: Blo
 	});
 
 	const embeddings = compact(embeddingsWithNull);
-
-	console.log("all the embeddings", embeddings);
 
 	return await upsertVectors(embeddings);
 };

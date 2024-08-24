@@ -25,7 +25,7 @@ const DEFAULT_BLOCKS: PartialBlock = {
 	children: [],
 };
 
-const UPDATE_INTERVAL = 20000; // ms
+const UPDATE_INTERVAL = 5000; // ms
 
 export default function NoteDoc() {
 	const { currentNote, updateCurrentNote, titleCopy, setTitleCopy } = useNotesContext();
@@ -79,7 +79,7 @@ export default function NoteDoc() {
 				<IconButton
 					onClick={handleGetSuggestions}
 					style={{
-						marginRight: 360,
+						marginRight: 40,
 						backgroundColor: "transparent",
 						border: "none",
 						outline: "none",

@@ -14,15 +14,15 @@ const Home = () => {
 		<Stack sx={{ height: "100%" }}>
 			<ThemeProvider theme={theme}>
 				<CssBaseline />
-				<SuggestionsContextProvider>
-					<NotesContextProvider>
+				<NotesContextProvider>
+					<SuggestionsContextProvider>
 						<Stack direction="row" sx={{ height: "100%" }}>
 							<NoteListSidebar />
 							<NoteDoc />
 							<SuggestionBar />
 						</Stack>
-					</NotesContextProvider>
-				</SuggestionsContextProvider>
+					</SuggestionsContextProvider>
+				</NotesContextProvider>
 			</ThemeProvider>
 		</Stack>
 	);

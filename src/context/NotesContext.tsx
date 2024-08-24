@@ -55,7 +55,9 @@ export const NotesContextProvider = ({ children }: NotesContextProviderProps) =>
 		fetchAllNotes();
 	}, []);
 
-	const currentNote = useMemo(() => notes.find((doc) => doc.id === noteId), [noteId]);
+	const currentNote = useMemo(() => {
+		return notes.find((doc) => doc.id === noteId);
+	}, [noteId, isLoading]);
 	/**
 	 * When user updates the title on UI, we modify the titleCopy instead of currentNote.title
 	 * Only when the change is commited do we modify currentNote.title

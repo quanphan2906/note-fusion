@@ -3,6 +3,8 @@ import { Box, Drawer, Stack, Typography, useTheme } from "@mui/material";
 import { useSuggestionsContext } from "@/context/SuggestionsContext";
 import { useNotesContext } from "@/context/NotesContext";
 
+const drawerWidth = 260;
+
 const SuggestionBar = () => {
 	const { suggestions, setSuggestions } = useSuggestionsContext();
 	const { setNoteIdOnUrl } = useNotesContext();
@@ -15,11 +17,22 @@ const SuggestionBar = () => {
 	};
 
 	return (
-		<Drawer variant="permanent" anchor="right">
+		<Drawer
+			variant="permanent"
+			anchor="right"
+			sx={{
+				width: drawerWidth,
+				flexShrink: 0,
+				"& .MuiDrawer-paper": {
+					width: drawerWidth,
+					boxSizing: "border-box",
+				},
+			}}
+		>
 			<Stack
 				direction="column"
 				spacing={2}
-				sx={{ width: 260, backgroundColor: theme.palette.background.paper }}
+				sx={{ backgroundColor: theme.palette.background.paper }}
 				padding={2}
 			>
 				{suggestions.map(({ noteId, noteTitle, content }, index) => (

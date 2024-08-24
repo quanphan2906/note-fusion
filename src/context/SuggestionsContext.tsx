@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState } from "react";
 import { Suggestion } from "@/common/types/Suggestion";
 import { searchForRelevantBlocks } from "@/services/note.service";
+import { filter } from "lodash";
+import { useNotesContext } from "./NotesContext";
 
 type SuggestionsContextType = {
 	suggestions: Suggestion[];
@@ -18,10 +20,15 @@ export const SuggestionsContextProvider = ({
 	children,
 }: SuggestionsContextProviderProps) => {
 	const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+	const { currentNote } = useNotesContext();
 
 	const getSuggestionsForTextBlock: SuggestionsContextType["getSuggestionsForTextBlock"] =
 		async (text) => {
-			const _suggestions = await searchForRelevantBlocks(text);
+			const _suggestionsWithCurrentNote = await searchForRelevantBlocks(text);
+			const _suggestions = filter(
+				_suggestionsWithCurrentNote,
+				(suggestion) => suggestion.noteId !== currentNote?.id,
+			);
 			setSuggestions(_suggestions);
 		};
 

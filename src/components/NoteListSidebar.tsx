@@ -4,9 +4,7 @@ import {
 	List,
 	ListItemButton,
 	ListItemText,
-	Divider,
 	ListItem,
-	Button,
 	Typography,
 	IconButton,
 	Stack,
@@ -14,12 +12,19 @@ import {
 import { useNotesContext } from "@/context/NotesContext";
 import { palette } from "@/app/theme";
 import { ArticleOutlined, NoteAdd } from "@mui/icons-material";
+import { useSuggestionsContext } from "@/context/SuggestionsContext";
 
 const drawerWidth = 260;
 
 const NoteListSidebar = () => {
 	const { notes, currentNote, createNewNote, setNoteIdOnUrl, titleCopy } =
 		useNotesContext();
+	const { setSuggestions } = useSuggestionsContext();
+
+	const handleCurrentNoteChange = (noteId: string) => {
+		setNoteIdOnUrl(noteId);
+		setSuggestions([]);
+	};
 
 	return (
 		<Drawer
@@ -44,7 +49,7 @@ const NoteListSidebar = () => {
 					<React.Fragment key={note.id}>
 						<ListItem sx={{ padding: 0 }}>
 							<ListItemButton
-								onClick={() => setNoteIdOnUrl(note.id)}
+								onClick={() => handleCurrentNoteChange(note.id)}
 								sx={{
 									"&:hover": {
 										backgroundColor: palette.paperHover,
