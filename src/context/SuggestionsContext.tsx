@@ -17,13 +17,7 @@ interface SuggestionsContextProviderProps {
 export const SuggestionsContextProvider = ({
 	children,
 }: SuggestionsContextProviderProps) => {
-	const [suggestions, setSuggestions] = useState<Suggestion[]>([
-		{
-			noteId: "",
-			noteTitle: "asdlkvm;alsd",
-			content: "asdvlkm;q",
-		},
-	]);
+	const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
 
 	const getSuggestionsForTextBlock: SuggestionsContextType["getSuggestionsForTextBlock"] =
 		async (text) => {

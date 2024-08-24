@@ -79,7 +79,7 @@ export default function NoteDoc() {
 				<IconButton
 					onClick={handleGetSuggestions}
 					style={{
-						marginRight: 160,
+						marginRight: 360,
 						backgroundColor: "transparent",
 						border: "none",
 						outline: "none",
